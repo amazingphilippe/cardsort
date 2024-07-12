@@ -88,8 +88,11 @@
       <div class="link-container"></div>
     </div>
     <script src="pako-2.0.4.min.js"></script>
+    
     <script src="common-scripts.js"></script>
-    <script>
+    <script type="module">
+      import CSV from 'https://cdn.jsdelivr.net/npm/csv-string@4.1.1/+esm'
+
       const cardTextInput = document.querySelector('.card-text-input');
       const categoryNameInput = document.querySelector('.category-name-input');
       const categoryEditingCheckbox = document.querySelector('.category-editing-checkbox');
@@ -100,11 +103,12 @@
       buttonCreateLink.addEventListener('click', createLink);
 
       async function createLink() {
-        const cardTexts = textToArray(cardTextInput.value);
-        const categoryNames = textToArray(categoryNameInput.value);
+        const cardTexts = CSV.parse(cardTextInput.value);
+        const categoryNames = CSV.parse(categoryNameInput.value);
+        console.log(cardTexts, categoryNames);
         const data = {};
         for (const categoryName of categoryNames) {
-          data[categoryName] = [];
+          data[categoryName.join(";")] = [];
         }
         data[uncategorizedKey] = cardTexts;
         const settings = {};
@@ -119,6 +123,7 @@
 
       function textToArray(text) {
         let resultArray;
+
         if (text.trim().includes('\n')) {
           resultArray = text.split('\n');
         }
@@ -127,6 +132,9 @@
         }
         resultArray = resultArray.map(item => item.trim());
         resultArray = resultArray.filter(item => !!item);
+
+        console.log(CSV.parse(text))
+        console.log(resultArray)
         return resultArray;
       }
     </script>
