@@ -57,6 +57,9 @@
     .grid {
       position: relative;
     }
+    h2 {
+      padding: 0.5rem;
+    }
 
     .item {
       display: block;
@@ -67,7 +70,7 @@
       z-index: 3;
     }
 
-    .item.muuri-item-dragging .card {
+    .item.muuri-item-dragging > .item-content > .card {
       box-shadow: 0 0 20px #6A798755;
       transform: rotate(5deg);
       transform-origin: center;
@@ -141,10 +144,10 @@
     .card {
       max-width: calc(50vw - 45px);
       margin: 0.5rem;
-      font-size: 1.0625rem;
-      cursor: grab;
+      font-size: 0.875rem;
       background-color: #ACBAC8;
       border-radius: 3px;
+      --color: transparent;
     }
 
     .card span {
@@ -158,29 +161,57 @@
       border-bottom-left-radius: 0px;
     }
     .card[data-type="email"] {
-      width: 480px;
+      width: 475px;
       border: 2px solid #ACBAC8;
-      border-top-width: 12px;
       background-color: white;
       padding-inline: 0rem;
     }
 
     .card[data-type="email"] .subject {
-      font-size: 20px;
+      font-size: 0.875rem;
       padding-block: 0.5rem;
     }
 
-    .card[data-type="email"] > div {
-      border-top: 2px solid #ACBAC8;
-      padding-inline: 0.5rem;
+    .card[data-type="email"] > .card-controls {
+      padding: 0.5rem;
+      padding-bottom: 0;
     }
 
     .card[data-type="email"] .type {
       padding-inline: 0.5rem;
     }
 
-    .card .type {
+    .card[data-type="email"] hr {
+      border: 0px solid #ACBAC8;
+      border-bottom: 2px solid #ACBAC8;
+    }
+    .card[data-type="email"] blockquote {
+      border: 0px solid #ACBAC8;
+      border-left: 8px solid #ACBAC8;
+      margin-left: 0;
+      padding-left: 1rem;
+    }
+    .card[data-type="email"] > details {
+      padding: 0.5rem;
+    }
 
+    .muuri-item:has(details[open]) {
+      z-index: 999;
+    }
+    .muuri-item:has(details[open]) .card {
+      border: 2px solid black;
+  outline: 2px solid #B79000;
+  outline-offset: 2px;
+  
+    }
+    h1 {
+      font-size: 1.2em;
+    }
+    h2 {
+      font-size: 1.1em;
+    }
+    h3 {
+      font-size: 1em;
     }
 
     .card .card-image {
@@ -210,12 +241,44 @@
       display: flex;
       flex-direction: column;
       gap: 0.5rem;
-      margin: 1rem 2rem;
+      margin: 0.5rem;
       padding: 0.5rem;
-      padding-bottom: 0;
       background: #fff;
       border-radius: 12px;
       border: 2px solid #ACBAC8;
+      overflow: clip;
+    }
+
+    
+    .categories .muuri-item:nth-child(10n+1) .category {
+      --color: #4e79a7;
+    }
+    .categories .muuri-item:nth-child(10n+2) .category {
+      --color: #f28e2c;
+    }
+    .categories .muuri-item:nth-child(10n+3) .category {
+      --color: #e15759;
+    }
+    .categories .muuri-item:nth-child(10n+4) .category {
+      --color: #76b7b2;
+    }
+    .categories .muuri-item:nth-child(10n+5) .category {
+      --color: #59a14f;
+    }
+    .categories .muuri-item:nth-child(10n+6) .category {
+      --color: #edc949;
+    }
+    .categories .muuri-item:nth-child(10n+7) .category {
+      --color: #af7aa1;
+    }
+    .categories .muuri-item:nth-child(10n+8) .category {
+      --color: #ff9da7;
+    }
+    .categories .muuri-item:nth-child(10n+9) .category {
+      --color: #9c755f;
+    }
+    .categories .muuri-item:nth-child(10n+10) .category {
+      --color: #bab0ab;
     }
 
     .category .title {
@@ -253,13 +316,17 @@ margin: 0;
       width: 100%;
     }
 
-    .category-drag-handle {
+    .category-drag-handle, .card-drag-handle {
       width: 100%;
       height: 16px;
-      background: radial-gradient(#ACBAC8 35%, transparent 36%) 0 0;
-      background-color: #fff;
+      background: radial-gradient(#11171B55 35%, transparent 36%) 0 0;
+      background-color: var(--color, transparent);
       background-size: 8px 8px;
       cursor: grab;
+    }
+
+    .category-drag-handle {
+      box-shadow: 0 0 0 0.5rem var(--color, white);
     }
   </style>
   </head>
@@ -272,19 +339,27 @@ margin: 0;
       <button class="btn-export-result btn-secondary">Export result</button>
       </div>
       <div class="uncategorized-cards">
+        <h2>Sample emails and text messages</h2>
         <div class="grid"></div>
       </div>
       <div class="categories">
+        <h2>Categories</h2>
         <div class="grid"></div>
       </div>
       </div>
       <template class="card-template">
         <div class="item">
           <div class="item-content">
-        <div class="card">
+            
+            <div class="card">
+              <div class="card-controls">
+                <div class="card-drag-handle"></div>
+              </div>
+              <details>
           <span class="type">Type</span>
-          <div class="subject">Subject</div>
+          <summary class="subject">Subject</summary>
           <div class="content">Content</div>
+          </details>
         </div>
         </div>
         </div>
@@ -328,6 +403,7 @@ margin: 0;
       const cardImageRegex = /\s*image\s*:\s*((?:https?|data):\S+)/i;
       const uncategorizedCardsGrid = new Muuri('.uncategorized-cards .grid', {
         dragEnabled: true,
+        dragHandle: '.card-drag-handle',
         dragSort: () => cardGrids,
         dragPlaceholder: {
           enabled: true,
@@ -451,12 +527,12 @@ margin: 0;
         }
         else {
           cardElement.setAttribute("data-type", text[0])
-          cardType.textContent = text[0];
+          cardType.remove()
           if (text[1]) {
             cardSubject.textContent = text[1];
           }
           else {
-            cardSubject.remove()
+            cardSubject.textContent = text[2]
           }
           if (cardElement.getAttribute("data-type") === "email") {
             cardContent.innerHTML = md.render(text[2]);
@@ -464,7 +540,7 @@ margin: 0;
 
 
           } else {
-            cardContent.textContent = text[2];
+            cardContent.remove();
 
           }
 
@@ -509,6 +585,7 @@ margin: 0;
             onFinish: () => {
               const categoryGrid = new Muuri(itemElement.querySelector('.grid'), {
                 dragEnabled: true,
+                dragHandle: '.card-drag-handle',
                 dragSort: () => cardGrids,
                 dragPlaceholder: {
                   enabled: true,
